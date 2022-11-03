@@ -1,0 +1,141 @@
+---
+title: "Exemplos do livro Mastering Shiny"
+author: "José Felipe Custodia de Azevedo"
+output: pdf_document
+---
+
+```{r}
+ui <- fluidPage(
+
+  titlePanel("Hello Shiny!"),
+
+  sidebarLayout(
+
+    sidebarPanel(
+      sliderInput(
+        "bins", label = "Number of bins:",
+        min = 1, value = 30, max = 50
+      )
+    ),
+
+    mainPanel(
+      plotOutput("distPlot")
+    )
+  )
+)
+```
+
+Não é recomendado usar sidebar no lado direito da tela, devido o homem ocidental ler da esquerda para direita, quando posiciona o sidebar à direita, o leito/usuário perde o foco do sidebar ou  o sidebar se torna algo não intuitivo.
+
+```
+sidebarLayout(position = "right",
+              
+  sidebarPanel(
+    # Inputs excluded for brevity
+  ),
+  mainPanel(
+    # Outputs excluded for brevity 
+  )
+)
+````
+
+
+```{r}
+##Exemplo grade
+ui <- fluidPage(
+  titlePanel("Central limit theorem"),
+  sidebarLayout(
+    sidebarPanel(
+      numericInput("m", "Number of samples:", 2, min = 1, max = 100)
+    ),
+    mainPanel(
+      plotOutput("hist")
+    )
+  )
+)
+server <- function(input, output, session) {
+  output$hist <- renderPlot({
+    means <- replicate(1e4, mean(runif(input$m)))
+    hist(means, breaks = 20)
+  }, res = 96)
+}
+
+
+```
+
+
+```{r}
+##Exemplo navlist
+
+ui <- fluidPage(
+  
+  titlePanel("Application Title"),
+  
+  navlistPanel(
+    "Header A",
+    tabPanel("Component 1"),
+    tabPanel("Component 2"),
+    "Header B",
+    tabPanel("Component 3"),
+    tabPanel("Component 4"),
+    "-----",
+    tabPanel("Component 5")
+  )
+)
+
+```
+
+
+```{r}
+#Exemplo taabset
+ui <- fluidPage(
+  sidebarLayout(
+    sidebarPanel(
+      textOutput("panel")
+    ),
+    mainPanel(
+      tabsetPanel(
+        id = "tabset",
+        tabPanel("panel 1", "one"),
+        tabPanel("panel 2", "two"),
+        tabPanel("panel 3", "three")
+      )
+    )
+  )
+)
+server <- function(input, output, session) {
+  output$panel <- renderText({
+    paste("Current panel: ", input$tabset)
+  })
+}
+
+```
+
+
+
+
+```{r}
+library(shinythemes)
+
+ui <- fluidPage(theme = shinytheme("cerulean"),
+  sidebarLayout(
+    sidebarPanel(
+      textOutput("panel")
+    ),
+    mainPanel(
+      tabsetPanel(
+        id = "tabset",
+        tabPanel("panel 1", "one"),
+        tabPanel("panel 2", "two"),
+        tabPanel("panel 3", "three")
+      )
+    )
+  )
+)
+server <- function(input, output, session) {
+  output$panel <- renderText({
+    paste("Current panel: ", input$tabset)
+  })
+}
+
+```

@@ -1,0 +1,11 @@
+	Algumas observações são válidas:
+
+	*Os slides estão bem completos, portanto não foram necessárias mais detalhes sobre a apresentação;
+
+	*Para acessar os slides basta rodar o arquivo em "Run Apresentation" e clicar em "Open in
+Browser", isso porque como rodamos em shiny para que as aplicações e os exemplos ficassem interativos
+e mais fáceis de visualizar, ele não salva os slides que abrem em HTML, mas basta rodar o arquivo em
+.rmd que ele abrirá normalmente;
+
+	*A imagem acrescentada aqui precisa estar no diretório escolhido em "Session -> Set Working
+Directory -> Choose Directory..." para que essa apareça nos slides.

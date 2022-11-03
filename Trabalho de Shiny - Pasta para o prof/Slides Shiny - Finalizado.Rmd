@@ -1,0 +1,709 @@
+---
+title: "Shiny"
+author: "Janemercure Oliveira de Souza, José Felipe Custodia de Azevedo, Laíza Mendes Jaime de Rezende e Brito, Pedro Caio Limeira de Miranda, Rafael Costa Ramos e Thales Paiva de Godoy."
+output: 
+  ioslides_presentation:
+    transition: slower
+    widescreen: FALSE
+    logo: Unb.png
+    
+  runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	error = FALSE,
+	message = FALSE,
+	warning = FALSE
+)
+```
+
+
+# Sumário
+
+***
+
+  Nesses slides trataremos sobre os seguintes pontos sobre o pacote **Shiny**:
+  
+  > - Introdução;
+  > - A Interface geral do Shiny;
+  > - UI;
+  > - Server;
+  > - Reatividade;
+  > - Estética do Shiny;
+  > - Dashboard;
+  > - Publicação.
+  
+
+# Introdução
+
+## Apresentando o Shiny
+
+### O que é o Shiny?
+> - O **Shiny** é um pacote do R criado com a intenção de se fazer aplicações, em HTML, simples e interativas. Portanto, vale salientar que no shiny **não** se produz páginas na web, e sim aplicações web ou web apps, como são chamadas, por meio de um servidor web, que chamaremos de “shiny server”.
+
+> - O Shiny **não** é uma página web!
+
+> - É um **pacote** no qual você pode criar um trabalho em R e disponibilizá-lo em um navegador da web, uma janela, para que qualquer pessoa que pode usar esse navegador possa acessar e interagir com esse trabalho/aplicação.
+ 
+
+## Apresentando o Shiny
+
+### Motivos para usar o Shiny(Vantagens):
+> - Com o Shiny, é possível fazer o mesmo que se faz com linguagens em HTML, CSS e JavaScript, mas com conhecimentos **apenas de R**, o que torna o **trabalho mais simples**;
+
+> - É possível criar **painéis interativos** que representem os indicadores que você está criando ou desenvolvendo;
+
+> - Ao invés de simples PDFs, podemos obter um **aplicativo interativo** que permite que o usuário encontre facilmente as informações e interaja com os dados conforme ele preferir;
+
+> - Pode entregar visões não técnicas com informações e análises interativas diferentes, de acordo com o que o usuário escolhe como entrada.
+
+
+## Pacotes importantes que serão utilizados
+
+```{r }
+if(!require("pacman")) install.packages("pacman")
+pacman::p_load("shiny", "shinydashboard")
+
+library(shiny)
+library(shinydashboard)
+```
+
+
+# A Interface do Shiny
+
+## Criação de um Shiny App
+> - File -> New file -> Shiny Web App...
+
+> - Tem-se duas opções: “Single file” e “Multiple file”;
+
+> - Em "Multiple file" são criados dois arquivos separados(ui.R e server.R), um UI(user interface) e outro SERVER(servidor);
+
+> - Em "Single file" é criado apenas um arquivo(app.R), no qual, dentro dele, deve-se sinalizar o que vai ser colocado no UI e no SERVER, para então rodar com o comando `shinyApp(ui = ui, server = server)`, que junta os dois.
+
+
+## O que são e como funcionam o UI e o SERVER?
+> - O **UI** é como vai ser a minha página, onde se coloca dados sobre a entrada, aí o **SERVER** pega esses dados, trabalha no interior dele o que é pedido e gera um "objeto de saída", o que volta para o **UI**, onde utiliza-se esses dados trabalhados e emite um resultado no formato escolhido.
+
+
+```{r }
+#Como 'Single file'(app.R)
+library(shiny)
+ui <- fluidPage()
+server <- function(input, output){}
+shinyApp(ui = ui, server = server)
+```
+
+# UI - Interface do usuário (User Interface)
+
+## O que colocamos na UI?
+> - É interface do usuário, onde é gerado os detalhes em HTML, JavaScript e CSS, sem que você precise saber todos os detalhes sobre eles ou como eles estão funcionando, o que simplifica muito o trabalho Declaração e Configuração dos Objetos de Entrada e Saída;
+
+> - É nele que o programador define os objetos de Entrada e de Saída, bem como pode configurá-los como referir;
+
+> - Assim, o que é determinado pelo usuário fica armazenado no objeto de entrada do UI;
+
+> - Já os objetos de saída que são declarados na UI, são utilizados e "gerados" depois no SERVER, mas é na UI que se define o formato de saída desses "outputs".
+
+## Estruturas de entrada - InputId()
+> - Basicamente, os "Inputs" indicam, no ShinyApp, os widgets, nos quais o usuário irá interagir escolhendo a entrada que preferir, seja ela um valor ou um texto, e que posteriormente será enviada e rodada no SERVER.
+
+### Argumentos importantes do Input:
+> - **InputId**: parâmetro em que se identifica o nome do objeto que será referenciado no server;
+
+> - **Label**: parâmetro que define o texto que aparecerá no widget para auxilar o usuário a entender o que ele deve definir como entrada.
+
+
+## Estruturas de entrada - InputId()
+
+### Exemplos de estruturas comuns:
+
+ - `sliderInput()`:
+ 
+```{r sliderInput}
+inputPanel(
+  sliderInput("id_slider", label = "Selecione o valor:",
+              min = 1, max = 10, value = 5)
+)
+```
+
+***
+
+ - `selectInput()`:
+
+```{r selectInput}
+inputPanel(
+  selectInput(inputId = 'id_select', label = 'Selecione uma opção:',
+            choices = c("DF","RJ","GO"))
+)
+```
+
+ - `textInput()`:
+ 
+```{r textInput}
+inputPanel(
+  textInput(inputId = 'id_text', label = 'Digite um texto:')
+)
+```
+
+***
+
+ - `numericInput()`:
+ 
+```{r numericInput}
+inputPanel(
+  numericInput(inputId = 'id_numeric',
+               label = 'Selecione um valor:',value = 10)
+)
+```
+
+
+## Estruturas de entrada - InputId()
+
+### Formatos de TEXTO - textInput() 
+  
+- `passWordInput()`: função para inserir senhas, a própria função formata as entradas;
+
+```{r passwordInput}
+inputPanel(
+  passwordInput(inputId = 'id_numeric', label = 'Digite sua Senha:')
+)
+```
+
+## Estruturas de entrada - InputId()
+
+### Formatos de TEXTO - textInput()
+
+- `textAreaInput()`: função que possibilitar inserir textos mais longos;
+```{r textAreaInput}
+inputPanel(
+  textAreaInput(inputId = 'id_texto_area',
+                label = 'Digite um texto:')
+)
+```
+
+## Estruturas de entrada - InputId()
+
+### Formatos de VALORES NUMÉRICOS:
+ - `numericInput()`
+  
+ - `sliderInput()`
+
+### Formatos de DATAS:
+
+ - `dateInput()`:
+```{r dateInput}
+inputPanel(
+  dateInput(inputId = 'id_data', label = 'Digite uma data:')
+)
+```
+
+## Estruturas de entrada - InputId()
+### Formatos de DATAS:
+
+- `dateRangeInput()`:
+```{r dateRangeInput}
+inputPanel(
+  dateRangeInput(inputId = 'id_data_range',
+                 label = 'Selecione uma data inicial e outra final:')
+)
+```
+
+## Estruturas de entrada - InputId()
+### Formatos de OBJETOS DE SELEÇÃO ÚNICA:
+
+ - `selectInput()`
+  
+ - `radioButtons()`:
+```{r radioButtons}
+inputPanel(
+  radioButtons(inputId = 'id_radio',label = 'Sexo:',
+               choices = c("Masculino","Feminio"))
+)
+```
+
+## Estruturas de entrada - InputId()
+### Formatos de OBJETOS DE SELEÇÃO MÚLTIPLA:
+
+ - `checkboxGroupInput()`:
+```{r checkboxGroupInput}
+inputPanel(
+  checkboxGroupInput(inputId = 'id_check',label = 'Interesses:',
+               choices = c("Informática", "Esportes",
+                           "Filmes", "Séries"))
+)
+```
+
+## Estruturas de entrada - InputId()
+### Formatos de OBJETOS PARA UPLOAD:
+
+ - `fileInput()`:
+```{r fileInput}
+inputPanel(
+  fileInput(inputId = 'id_file', 
+            label = 'Selecione um Arquivo:',
+            buttonLabel = 'Carregar Arquivo')
+)
+```
+
+## Estruturas de entrada - InputId()
+### Formatos de OBJETO DE BOTÃO:
+- `actionButton()`:
+```{r actionButton}
+inputPanel(
+  actionButton(inputId = 'id_action',label = 'Executar'))
+```
+
+
+ - `actionLink()`:
+```{r actionLink}
+inputPanel(
+  actionLink(inputId = 'id_link',label = 'Link'))
+```
+
+
+## Estruturas de saída - OutputId()
+> - Essas estruturas imprimem a(s) saída(s), criada(s) no server, no formato escolhido que é declarado no UI.
+
+> - A saída é referenciada no SERVER com o código `output$nome_objeto`.
+
+### Argumento importante do Output:
+> - **OutputId**: parâmetro no qual cria-se o nome do objeto de cada saída, dentro do formato desejado, que será chamado no server.
+
+
+## Estruturas de saída - OutputId()
+
+### Exemplos de estruturas de saída e o que geram:
+> - `uiOutput()`: Elemento Shiny UI;
+> - `imageOutput()`: a saída é uma imagem;
+> - `plotOutput()`: Gráficos;
+> - `htmlOutput()`: HTML;
+> - `textOutput()`: Texto;
+> - `verbatimOutput()`: Texto sem formatação;
+> - `tableOutput()`: Tabela;
+> - `dataTableOutput()`: Tabela interativa.
+
+
+# SERVER SIDE - Servidor
+
+## O que colocamos no SERVER?
+> - Feita a estruturação do ui, agora é a vez de usarmos a função server(). Essa função é responsável por gerar os outputs com os valores dos inputs escolhidos. Assim, é SERVER que cria-se de fato a saída, com a atribuição dessa função.
+
+> - Essa função deve receber dois argumentos, o input e o output.
+
+```{r }
+server <- function(input, output){
+  #Código referenciando os Outputs
+}
+```
+
+## Como proceder dentro do server?
+
+### Buscando outputs
+ - Os outputs criados ficam armazenados em uma lista, logo, poderão ser referidos aqui com o `$`. *Por exemplo*: `output$x`, sendo "x" definido no outputId, no UI.
+
+```{r }
+server <- function(input, output){
+  #output$normplot <-
+}
+```
+
+## Como proceder dentro do server?
+
+### Função `render*()`
+
+ Após a definição do output, será usada as funções `render*()` para a sua construção. Algumas delas e o que geram, respectivamente:
+ 
+> - `renderPlot()`: Gráficos;
+> - `renderPrint()`: Qualquer print;
+> - `renderTable()`: Diversas estruturas em forma de tabela;
+> - `renderDataTable()`: Data frames;
+> - `renderImage()`: Imagens;
+> - `renderText()`: Strings;
+> - `renderUI()`: Um elemento do UI ou HTML.
+
+## Como proceder dentro do server?
+
+### Buscando inputs
+
+ - Por fim, vamos usar os inputs criados no ui, que tambem ficarão armazenados em uma lista, igual aos outputs. *Por exemplo*:`input$y`, sendo "y" definido no inputId.
+
+```{r }
+server <- function(input, output){
+  #output$normplot <- renderPlot({
+  
+        #x <- rnorm(input$numeros)
+        
+        #hist(x, col = 'darkgray', border = 'white',
+              #main = input$titulo)
+  #})
+}
+```
+
+
+# Reatividade
+
+## Do que se trata?
+> - A reatividade pode ser associada a ideia do Excel. Por exemplo, quando utilizamos uma fórmula que depende de células, sempre que essas células mudarem, o valor gerado da fórmula também irá mudar;
+
+> - O Shiny permite fazermos isso, dependendo apenas do output e input. Assim, a reatividade funciona e é guiada partir da lista de objetos no input e das funções reativas render*();
+
+> - No entanto, alguns problemas surgem com apenas essa base, por isso, o Shiny possui outras funções que manipulam a forma que a reatividade acontece.
+
+## Alguma dessas funções
+> - `reactive()`: funciona com um render*(), mas amplia as possibilidades de uso. Ele vai criar uma observação única que pode ser utilizada em vários outputs, de forma conjunta;
+
+> - `isolate()`: essa função irá possibilitar inserir valores reativos sem que ocorra o fluxo reativo;
+
+> - `observeEvent()`: funciona como uma função reativa, mas não gera resultados e nem pode ser usada como entrada para outras expressões reativas. Logo, ela será utilizada para gerar uma ação para um evento específico. Podendo gerar, por exemplo, mensagens no console ou arquivos;
+
+## Alguma dessas funções
+> - `observe()`: a ideia é a mesma da função anterior, a diferença é que aqui ele responderá a todo o código e não a uma parte específica;
+
+> - `eventReactive()`: permite condicionar a reatividade a um argumento. Então, só acontecerá o fluxo assim que essa condição for satisfeita;
+
+> - `reactiveValues()`: sua finalidade é criar uma lista de valores reativos que poderão ser usados depois com o `observeEvent()`.
+
+
+# Estética do Shiny
+
+## Aparência visual do Shiny
+  Agora, iremos abordar algumas ferramentas que controlam essa aparência visual do Shiny, são elas:
+  
+  > - Layout;
+  > - Temas;
+  > - Shiny com HTML.
+
+
+## Layout 
+  O Layout do Shiny é responsável por organizar os objetos de entrada e saída de dados. Sobre ele:
+  
+ - É declarado no fluidPage();
+ - Segue a hierarquia de acordo a declaração;
+ - Podemos utilizar HTML, CSS, JS.
+
+```
+fluidPage(
+  titlePanel("título"),
+  sidebarLayout(
+    sidebarPanel(),
+    mainPanel()
+  )
+)
+```
+
+## Layout
+
+### Formas de organizar o layout:
+  Para criar layouts mais complexos, precisará de outras funções de layout de dentro de `fluidPage()` / `fixedPage()` / `fillPage()`.
+
+  As funções poderão gerar:
+  
+  > - Barra Lateral;
+  > - Em grade(grid);
+  > - Tabsets.
+
+
+## Layout
+
+<div class="blue"> Página com Barra Lateral: </div>
+
+> - `sidebarLayout()`;
+> - `sidebarPanel()`.
+
+
+<div class="blue"> Página com Grade(Grid):</div>
+
+> - `fluidRow()`;
+> - `column()` e `wellPanel()`.
+
+
+<div class="blue"> Página com TabSets: </div>
+
+> - `tabsetPanel()`.
+
+
+
+## Temas
+
+ - Aparência do Aplicativo Shiny;
+ - O padrão é um Tema Bootstrap;
+ - Utilizar pacote `shynythemes`.
+
+### Exemplos:
+
+> - flatly;
+> - cerulean;
+> - darkly.
+
+## Shiny com HTML
+
+ - Como a maioria dos sites e aplicativos que estão na web usam o HTML como linguagem, podemos usar o HTML para aumentar o poder de personalizar os aplicativos Shiny.
+
+
+# Dashboard
+
+## Estrutura de um Dashboard
+
+- Os dashboards possuem uma estrutura padrão dividida em: Header, Sidebar e Body.
+
+```{r eval = FALSE}
+library(shiny)
+library(shinydashboard)
+library(DT)
+
+ui <- dashboardPage(
+  dashboardHeader(),
+  dashboardSidebar(sidebarMenu()),
+  dashboardBody()
+)
+
+server <- function(input, output){}
+  
+shinyApp(ui, server)
+```
+
+## Resultado (Dashboard "Em Branco")
+
+```{r echo=FALSE}
+library(shiny)
+library(shinydashboard)
+library(DT)
+
+ui <- dashboardPage(
+  dashboardHeader(),
+  dashboardSidebar(sidebarMenu()),
+  dashboardBody()
+)
+
+server <- function(input, output){}
+  
+shinyApp(ui, server)
+```
+
+## Dashboard Iris - Parte 1
+
+- Criando a UI do dashboard.
+
+```{r }
+ui <- dashboardPage(
+  dashboardHeader(title = "Dashboard CE2"),
+    dashboardSidebar(),
+    dashboardBody(
+      box(plotOutput("correlation_plot"), width = 8),
+      box(selectInput("features", "Features:", 
+                    c("Sepal.Width", "Petal.Lenght", "Petal.Width")),
+          width = 4
+      )
+    )
+)
+```
+
+## Dashboard Iris - Parte 2
+
+- Criando o server do dashboard.
+
+```{r }
+server <- function(input, output){
+  output$correlation_plot <- renderPlot({
+    plot(iris$Sepal.Length, iris[[input$features]],
+         xlab = "Sepal.Lenght", ylab = "Feature")
+  })
+}
+```
+
+## Dashboard Iris - Resultado
+
+```{r }
+shinyApp(ui, server)
+```
+
+## Dashboard Iris e Cars - Parte 1
+
+- Criando a UI do dashboard incrementado.
+
+```{r }
+ui <- dashboardPage(
+  dashboardHeader(title = "Dashboard CE2"),
+    dashboardSidebar(
+      sidebarMenu(menuItem("Iris", tabName = "iris", icon = icon("tree")),
+        menuItem("Cars", tabName = "cars", icon = icon("car"))
+      )
+    ),
+    dashboardBody(
+      tabItems(
+    tabItem("iris",box(plotOutput("correlation_plot"), width = 8),
+            box(selectInput("features", "Features:", 
+                    c("Sepal.Width", "Petal.Lenght", "Petal.Width")), width = 4
+      )
+    ),
+    tabItem("cars",
+            fluidPage(h1("Cars"), dataTableOutput("carstable"))
+    )
+    )
+)
+)
+```
+
+## Dashboard Iris e Cars - Parte 2
+
+- Criando o server do dashboard incrementado.
+
+```{r }
+server <- function(input, output){
+  output$correlation_plot <- renderPlot({
+    plot(iris$Sepal.Length, iris[[input$features]],
+         xlab = "Sepal.Lenght", ylab = "Feature")
+  })
+  output$carstable <- renderDataTable(mtcars)
+}
+```
+
+## Dashboard Iris e Cars - Resultado
+
+```{r }
+shinyApp(ui, server)
+```
+
+
+# Publicação
+
+## Compartilhamento de aplicativos Shiny
+
+- R Scripts;
+  
+- Web Page.
+
+## R Scripts
+
+> - `runApp()`;
+  
+> - `runUrl()`;
+
+> - `runGitHub()`;
+
+> - `runGist()`.
+
+## R Scripts
+
+### `runApp()`
+
+ - Necessário salvar o app Shiny em uma pasta zip no diretório.
+  
+```
+runApp("covid-app")
+```
+
+
+## R Scripts
+
+### `runUrl()`
+
+ - Baixa e ativa um aplicativo Shiny direto de um link da Internet;
+
+ - É necessário hostear uma pasta zip em uma página da Web.
+ 
+```
+runUrl('https://github.com/rstudio/shiny_example/archive/master.tar.gz')
+```
+
+ - Fonte: RStudio 
+ 
+## R Scripts
+
+### `runGitHub()`
+
+- A opção é gratuita;
+  
+- É necessário criar um repositório com uma pasta no "app.r" em conjunto com datasets e pastas auxiliares.
+
+```
+runGitHub( "<nome do seu repositório>", "<seu nome de usuário")
+```
+
+## R Scripts
+
+### `runGist()`
+
+ - É uma opção rápida que não necessita de conta no GitHub;
+
+ - [Site do GitHub;](https://gist.github.com/discover)
+
+ - Copie e cole sua pasta "app.r" na página Gist;
+
+ - Anote os números finais da URL dada.
+
+```
+runGist("eb3470beb1c0252bd0289cbc89bcf36f")
+```
+ 
+## Web Page
+
+> - Os métodos anteriores possuem a mesma limitação: a necessidade de um usuário possuir o R Studio instalado, não podendo ser leigo no assunto;
+
+> - É possível publicar um aplicativo Shiny em uma página web, usuários podem visitá-la sem necessidade de se preocupar com seu *back-end*;
+
+> - O R Studio oferece três formas para publicar seus aplicativos:
+
+  > - Shinyapps.io;
+  
+  > - Shiny Server;
+
+  > - RStudio Connect.
+
+## Web Page
+
+### Shinyapps.io
+
+> - Serviço de host oficial do R Studio;
+
+> - Considerado o mais fácil de ser utilizado;
+
+> - Permite publicar diretamente de sua sessão R;
+
+> - Completo controle sobre ferramentas de administração.
+
+> - [Site do Shinyapps.io](https://www.shinyapps.io/?_ga=2.116931590.10103468.1619594922-1682248225.1616838210)
+
+## Web Page
+
+### Shiny Server
+
+> - Gratuito, open source e disponível no GitHub;
+> - Disponível para usuários de Linux: necessário o uso de um server Linux com suporte Ubuntu 12.04 ou maior; 
+> - Necessário certo conhecimento técnico.
+
+> - [Guia de Instalação e Configuração Shiny Server](https://github.com/rstudio/shiny-server/blob/master/README.md)
+
+## Web Page
+
+### RStudio Connect
+
+- É um serviço mais profissional, disponibilizando funcionalidades como:
+
+> - Autenticação por Senha;
+> - Ferramentas de Administrador;
+> - Suporte de Prioridade;
+> - Suporte SSL.
+
+- Possibilidade de publicar a partir do próprio R Studio;
+- [Site Oficial do RStudio Connect.](https://www.rstudio.com/products/connect/?_ga=2.181288487.10103468.1619594922-1682248225.1616838210)
+
+
+
+
+# Bibliografia
+
+## Clique nos sites e conheça um pouco mais:
+
+> - Para alguns exemplos a mais: [Site de Shiny](https://shiny.rstudio.com/gallery/)
+
+> - Vídeo com explicações e exemplos: [Vídeo do YouTube](https://youtu.be/6KsBiRbDyVM)
+
+> - Livro: [Mastering Shiny](https://mastering-shiny.org/preface.html)
+
+> - [Shiny Cheat Sheet](https://www.rstudio.com/wp-content/uploads/2015/02/shiny-cheatsheet.pdf)
+
+
+

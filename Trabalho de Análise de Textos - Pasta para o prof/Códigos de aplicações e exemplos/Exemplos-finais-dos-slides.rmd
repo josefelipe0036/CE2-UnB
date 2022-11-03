@@ -1,0 +1,279 @@
+---
+title: "Roteiro - Tópico 3"
+author: "João Pedro Almeida Santos & Davi Wentrick Feijó"
+date: "04/05/2021"
+output: pdf_document
+---
+
+```{r setup}
+knitr::opts_chunk$set(echo = TRUE)
+# load twitter library - the rtweet library is recommended now over twitteR
+library(rtweet)
+# plotting and pipes - tidyverse and others!
+library(ggplot2)
+library(dplyr)
+library(ggraph)
+library(cluster)
+library(wordcloud)
+# text mining library
+library(tidytext)
+library(ggraph)
+library(tm)
+library(lexiconPT)
+library(reshape2)
+library(ape)
+library(wordcloud2)
+library(tidyr)
+# whatever name you assigned to your created app
+appname <- "Acrescente aqui o nome do seu app criado"
+
+## api key (example below is not a real key)
+key <- "Acrescente aqui sua chave da API"
+
+## api secret (example below is not a real key)
+secret <- "Acrescente aqui sua API"
+
+#tokens
+access_token = "Acrescente aqui o seu acesso"
+access_secret = "Acrescente aqui o seu acesso"
+
+# create token named "twitter_token"
+twitter_token <- create_token(
+  app = appname,
+  consumer_key = key,
+  consumer_secret = secret,
+  access_token = access_token,
+  access_secret = access_secret)
+
+twitter_token_bearer = bearer_token(token = twitter_token)
+```
+
+## Limpeza
+Queremos apenas dados que forneçam informações pertinentes
+
+ Pontuações 
+ Stopwords - 
+ Diferenciação maiúsculas / minúsculas
+
+## Exemplificação: Análise de tweets
+
+### Extração interna
+`install.packages("rtweet") 
+ library(rtweet)`
+Com a devida API, temos à disposição diversas informações sobre tweets dos últimos dias a partir da função acima
+
+
+```{r}
+#Uso para 1000 tweets para teste
+tweets = search_tweets("vaccine", include_rts = FALSE, n = 100, 
+                       lang = "en", retryonratelimit = TRUE)
+```
+Tweets em inglês são mais fáceis de analisar. Menor variação na forma das palavras:
+
+beautiful vs bonito/bonita/bonitos/bonitas
+
+Mesmo quando consideramos expressões regulares a partir do radical das palavras, as dificuldades continuam.
+
+
+Os dados em formato data_frame() permitem manipulação direta.
+```{r}
+tweets %>%
+  ts_plot("1 hours") +
+  theme_minimal() +
+  theme(plot.title = element_text(face = "bold")) +
+  labs(
+    x = NULL, y = NULL,
+    title = "Frequencia de Twitter posts",
+    subtitle = "Tweets a cada 1 hora",
+    caption = "\nSource: Dados coletados pela API do Twitter"
+  )
+```
+### Primeiro tratamento. 
+
+Retirada das stopwords
+```{r}
+twitter_text = tweets$text #Consideramos apenas o texto do tweet
+lixo = stop_words$word
+```
+
+Forma Corpus e limpeza geral 
+```{r}
+twitter_text_corpus = VCorpus(VectorSource(twitter_text))
+
+#twitter_text_corpus = tm_map(twitter_text_corpus,
+# content_transformer(function(x)iconv(x, to = "UTF-8")))
+
+twitter_text_corpus = tm_map(twitter_text_corpus, content_transformer(tolower))
+
+twitter_text_corpus = tm_map(twitter_text_corpus, removePunctuation)
+
+twitter_text_corpus = tm_map(twitter_text_corpus,removeWords, lixo)
+
+twitter_text_corpus = tm_map(twitter_text_corpus,removeNumbers)
+```
+
+## Wordcloud: análise da frequência
+`library(wordcloud)`
+```{r}
+wordcloud(twitter_text_corpus, min.freq=30, max.words = 200, random.order = F)
+```
+
+Que problemas podemos enxergar com o gráfico?
+ Obviedades 
+ Redundâncias
+ Excesso de termos de pouca frequência
+ Estética não agradável
+
+
+## Estruturação DocumentTermMatrix
+É bastante útil para a visualização de clusters.
+```{r}
+twitter_dtm = DocumentTermMatrix(twitter_text_corpus)
+twitter_freq = colSums(as.matrix(twitter_dtm))
+```
+
+### Limpeza mais profunda
+```{r}
+twitter_dtm = removeSparseTerms(twitter_dtm, 0.99)
+twitter_freq = sort(colSums(as.matrix(twitter_dtm)), decreasing = T)
+```
+
+Volta-se ao formato data_frame para os plots
+```{r}
+twitter_df = data.frame(word = names(twitter_freq), freq = twitter_freq)
+```
+
+Observa-se uma melhora considerável na distribuição das palavras Porém, as redundâncias ainda incomodam e sugerem interpretações equivocadas.
+
+```{r}
+ggplot(subset(twitter_df,freq > 1400), aes(x = reorder(word,-freq), y = freq))+
+  geom_bar(stat = "identity")+
+  labs(x = "Termos", y = "Frequencia")
+```
+
+Que tal agora?
+
+```{r}
+twitter_df[c("govt","covid19"),1] <- c("government","covid")
+twitter_df = aggregate(freq~word,data=twitter_df,FUN=sum)
+
+grafico = ggplot(subset(twitter_df,freq > 1400), aes(x = reorder(word,-freq), y = freq))+
+  geom_bar(stat = "identity")+
+  labs(x = "Termos", y = "Frequencia")
+```
+
+Nova núvem de palavras
+
+```{r}
+wordcloud(twitter_df$word,twitter_df$freq,min.freq=10, max.words = 50, random.order = F, colors = formatacao)
+```
+
+
+## Dendograma e clusters
+Por várias razões, pode ser interessante representar os termos a partir de seus grupos de semelhança.
+
+`library(cluster)`
+
+```{r}
+distancia = dist(t(twitter_dtm), method = "euclidian")
+dendograma = hclust(d = distancia, method = "complete")
+plot(dendograma, hang = -1, main = "Dendograma de tweets",xlab = "distancia",ylab = "Altura")
+rect.hclust(dendograma,k = 10)
+plot(as.phylo(dendograma), cex = 0.6, label.offset = 0.5, type = "cladogram")
+```
+
+## Análise de sentimentos
+
+Diferentes lêxicos, para diferentes línguas
+
+Em português (limitações já descritas)
+`LexiconOT:: oplexicon_v3.0`
+```{r}
+sentimentos <- oplexicon_v3.0 %>%
+  select(term, polarity) %>%
+  rename(word = term)
+word = stopwords("pt")
+palavras_vazias <- as.data.frame(word)
+  
+
+tweets_pt <- search_tweets("vacina", include_rts = FALSE, n = 18000, 
+                       lang = "pt", retryonratelimit = TRUE, token = twitter_token_bearer) 
+
+an_sentimentosPT <- tweets %>%
+  unnest_tokens(word,text,token = "tweets") %>%
+  select(user_id,status_id,created_at,screen_name,word) %>%
+  anti_join(palavras_vazias) %>%
+  inner_join(sentimentos) %>%
+  mutate(polarity = as.factor(polarity)) %>%
+  count(word,polarity) %>%
+  acast(word ~ polarity, value.var = "n", fill = 0) %>%
+  comparison.cloud(colors = brewer.pal(8, "Dark2"),
+                   max.words = 100)
+```
+
+Em inglês
+`tidytext:: get_sentiments("bing")`
+```{r}
+an_sentimentosEN <- tweets %>%
+  unnest_tokens(word,text,token = "tweets") %>%
+  select(user_id,status_id,created_at,screen_name,word) %>%
+  anti_join(stop_words) %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(word,sentiment) %>%
+  acast(word ~ sentiment, value.var = "n", fill = 0) %>%
+  comparison.cloud(colors = brewer.pal(8, "Set1"),
+                   max.words = 100)
+```
+
+
+
+
+```{r}
+#tweets = get_timeline("@juliette",n = 500,include_rts = FALSE)
+
+
+tweets = search_tweets("superman", include_rts = FALSE, n = 1000, 
+                       lang = "en")
+
+tweets_bigrams <- tweets %>%
+  unnest_tokens(bigram,text,token = "ngrams",n=2) %>%
+  select(user_id,bigram,status_id,created_at,screen_name) %>%
+  count(bigram,sort=TRUE)
+  
+tweets_bigrams$bigram <- gsub("https t.co","",tweets_bigrams$bigram)
+tweets_bigrams$bigram <- gsub("https\\S*", "", tweets_bigrams$bigram)
+tweets_bigrams$bigram <- gsub("@\\S*", "", tweets_bigrams$bigram)
+tweets_bigrams$bigram <- gsub("amp", "", tweets_bigrams$bigram) 
+tweets_bigrams$bigram <- gsub("[\r\n]", "", tweets_bigrams$bigram)
+tweets_bigrams$bigram <- gsub("[[:punct:]]", "", tweets_bigrams$bigram)
+tweets_bigrams$bigram <- gsub("[[:digit:]]","",tweets_bigrams$bigram)
+
+tweets_bigrams <- tweets_bigrams %>%
+  filter(bigram != " ")
+
+bigrams_separated <- tweets_bigrams %>%
+  separate(bigram, c("word1", "word2"), sep = " ") 
+
+bigrams_filtered <- bigrams_separated %>%
+  filter(!word1 %in% stop_words$word) %>%
+  filter(!word2 %in% stop_words$word) %>%
+  filter(word1 != "" & word2 != "" )
+
+bigrams_filtered[1,2]
+
+# new bigram counts:
+bigram_counts <- bigrams_filtered %>% 
+  count(word1, word2, sort = TRUE)
+
+# United
+bigrams_united <- bigrams_filtered %>%
+  unite(bigram, word1, word2, sep = " ")
+
+
+bigram_graph = bigrams_filtered %>%
+  filter(n>7)
+ggraph(bigram_graph, layout = "fr") +
+  geom_edge_link() +
+  geom_node_point() +
+  geom_node_text(aes(label = name), vjust = 1, hjust = 1)
+```

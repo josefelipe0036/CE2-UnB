@@ -1,0 +1,75 @@
+---
+title: "Bigramas_analise_de_texto"
+author: "Davi Wentrick Feijó"
+date: "06/05/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(rtweet)
+library(ggplot2)
+library(dplyr)
+library(ggraph)
+library(cluster)
+library(wordcloud)
+library(tidytext)
+library(ggraph)
+library(tm)
+library(lexiconPT)
+library(reshape2)
+library(ape)
+library(wordcloud2)
+library(tidyr)
+```
+
+```{r}
+#tweets = get_timeline("@juliette",n = 500,include_rts = FALSE)
+
+
+tweets = search_tweets("superman", include_rts = FALSE, n = 1000, 
+                       lang = "en")
+
+tweets_bigrams <- tweets %>%
+  unnest_tokens(bigram,text,token = "ngrams",n=2) %>%
+  select(user_id,bigram,status_id,created_at,screen_name) %>%
+  count(bigram,sort=TRUE)
+  
+tweets_bigrams$bigram <- gsub("https t.co","",tweets_bigrams$bigram)
+tweets_bigrams$bigram <- gsub("https\\S*", "", tweets_bigrams$bigram)
+tweets_bigrams$bigram <- gsub("@\\S*", "", tweets_bigrams$bigram)
+tweets_bigrams$bigram <- gsub("amp", "", tweets_bigrams$bigram) 
+tweets_bigrams$bigram <- gsub("[\r\n]", "", tweets_bigrams$bigram)
+tweets_bigrams$bigram <- gsub("[[:punct:]]", "", tweets_bigrams$bigram)
+tweets_bigrams$bigram <- gsub("[[:digit:]]","",tweets_bigrams$bigram)
+
+tweets_bigrams <- tweets_bigrams %>%
+  filter(bigram != " ")
+
+bigrams_separated <- tweets_bigrams %>%
+  separate(bigram, c("word1", "word2"), sep = " ") 
+
+bigrams_filtered <- bigrams_separated %>%
+  filter(!word1 %in% stop_words$word) %>%
+  filter(!word2 %in% stop_words$word) %>%
+  filter(word1 != "" & word2 != "" )
+
+bigrams_filtered[1,2]
+
+# new bigram counts:
+bigram_counts <- bigrams_filtered %>% 
+  count(word1, word2, sort = TRUE)
+
+# United
+bigrams_united <- bigrams_filtered %>%
+  unite(bigram, word1, word2, sep = " ")
+
+
+bigram_graph = bigrams_filtered %>%
+  filter(n>7)
+ggraph(bigram_graph, layout = "fr") +
+  geom_edge_link() +
+  geom_node_point() +
+  geom_node_text(aes(label = name), vjust = 1, hjust = 1)
+```
+

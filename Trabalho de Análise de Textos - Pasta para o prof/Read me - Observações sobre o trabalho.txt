@@ -1,0 +1,12 @@
+	Observações sobre o trabalho:
+	
+	*Sobre os últimos exemplos apresentados, como foram informações geradas no dia, pode ser que,
+caso se rode os slides hoje, algumas informações fiquem prejudicadas ou aparecam diferentes, uma vez
+que os códigos usam de base tweets feitos até aquele momento em que se rodou o código;
+
+	*Para rodar o arquivo em .rmd dos slides é necessário o acréscimo da API no início do arquivo,
+o que também é preciso para os códigos de exemplos. Essa API foi retirada dos arquivos por questões de
+privacidade e segurança;
+
+	*As imagens acrescentadas nessa pasta precisam estar no diretório escolhido em "Session -> Set
+Working Directory -> Choose Directory..." para que essa apareçam nos slides, caso se rode esses novamente.
